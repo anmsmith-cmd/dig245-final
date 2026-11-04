@@ -138,7 +138,7 @@ Create a pitch deck (10-15 slide **Google Presentation**)* to share and plan you
 
 ##### <a href="https://en.wikipedia.org/wiki/Lightning_talk">Lightning talks</a> of your pitches
 1. Share a link to your proposal in Slack.
-1. Present slides on Zoom. 3 minutes max.
+1. Present slides. 3 minutes max.
 1. 1 minute max for questions / comments. Add others in Slack thread.
 
 </details>
