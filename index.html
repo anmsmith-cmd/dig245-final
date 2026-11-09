@@ -1,20 +1,392 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
+
 <head>
-    <!-- meta tags, links to css, etc. -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Final Project</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>BLACKJACK MULTIPLIED</title>
 </head>
 
 <body>
 
-    <!-- visible content goes here -->
-	<h1>Final Project</h1>
-	<p>See README.md for info</p>
+    <h1>BLACKJACK MULTIPLIED</h1>
+    <p>Blackjack with a twist!</p>
 
-    <!-- load javascript after the page elements render -->
-    <script src="assets/js/main.js"></script>
+    <!-- Welcome Screen -->
+    <div id="welcome">
+        <p>Play Blackjack against the computer.</p>
+        <p>Get as close to 21 as possible without going over!</p>
+        <p>Watch out for special 2x and 3x multiplier cards!</p>
+
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game" style="display:none;">
+
+        <h2>COMPUTER</h2>
+        <p id="computerCards">Cards: </p>
+        <p id="computerScore">Score: ?</p>
+
+        <hr>
+
+        <h2>YOU</h2>
+        <p id="playerCards">Cards: </p>
+        <p id="playerScore">Score: 0</p>
+
+        <p id="message">Your turn!</p>
+
+        <button id="hitButton" onclick="hit()">Hit</button>
+        <button id="standButton" onclick="stand()">Stand</button>
+
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results" style="display:none;">
+
+        <h2 id="winner"></h2>
+        <p id="finalScores"></p>
+
+        <button onclick="startGame()">Play Again</button>
+
+    </div>
+
+    <script>
+
+        // Game variables
+        let deck = [];
+        let playerHand = [];
+        let computerHand = [];
+
+        let gameOver = false;
+        let playerTurn = true;
+
+
+        // Create a deck of cards
+        function createDeck() {
+
+            deck = [];
+
+            let suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
+
+            let values = [
+                "A", "2", "3", "4", "5", "6",
+                "7", "8", "9", "10", "J", "Q", "K"
+            ];
+
+            // Add regular playing cards
+            for (let suit of suits) {
+
+                for (let value of values) {
+
+                    deck.push({
+                        value: value,
+                        suit: suit,
+                        type: "regular"
+                    });
+
+                }
+
+            }
+
+            // Add special multiplier cards
+            deck.push({
+                value: "2x",
+                type: "multiplier"
+            });
+
+            deck.push({
+                value: "2x",
+                type: "multiplier"
+            });
+
+            deck.push({
+                value: "3x",
+                type: "multiplier"
+            });
+
+            // Shuffle the deck
+            deck.sort(() => Math.random() - 0.5);
+
+        }
+
+
+        // Start or restart the game
+        function startGame() {
+
+            createDeck();
+
+            playerHand = [];
+            computerHand = [];
+
+            gameOver = false;
+            playerTurn = true;
+
+            document.getElementById("welcome").style.display = "none";
+            document.getElementById("results").style.display = "none";
+            document.getElementById("game").style.display = "block";
+
+            document.getElementById("hitButton").disabled = false;
+            document.getElementById("standButton").disabled = false;
+
+            document.getElementById("message").innerText = "Your turn!";
+
+            // Deal two cards to each player
+            drawCard(playerHand);
+            drawCard(computerHand);
+
+            drawCard(playerHand);
+            drawCard(computerHand);
+
+            updateScreen();
+
+            // Check for an initial bust or blackjack
+            if (getScore(playerHand) > 21) {
+                endGame();
+            }
+            else if (getScore(computerHand) > 21) {
+                endGame();
+            }
+            else if (getScore(playerHand) === 21 ||
+                     getScore(computerHand) === 21) {
+                endGame();
+            }
+
+        }
+
+
+        // Draw a card from the deck
+        function drawCard(hand) {
+
+            if (deck.length > 0) {
+
+                let card = deck.pop();
+
+                hand.push(card);
+
+            }
+
+        }
+
+
+        // Calculate the score
+        function getScore(hand) {
+
+            let total = 0;
+            let multiplier = 1;
+            let aces = 0;
+
+            for (let card of hand) {
+
+                if (card.type === "multiplier") {
+
+                    multiplier *= Number(card.value.replace("x", ""));
+
+                }
+
+                else if (card.value === "A") {
+
+                    total += 11;
+                    aces++;
+
+                }
+
+                else if (
+                    card.value === "K" ||
+                    card.value === "Q" ||
+                    card.value === "J"
+                ) {
+
+                    total += 10;
+
+                }
+
+                else {
+
+                    total += Number(card.value);
+
+                }
+
+            }
+
+            // Adjust Aces from 11 to 1 when needed
+            while (total > 21 && aces > 0) {
+
+                total -= 10;
+                aces--;
+
+            }
+
+            // Apply multiplier cards
+            total = total * multiplier;
+
+            return total;
+
+        }
+
+
+        // Display the cards and scores
+        function updateScreen() {
+
+            let playerText = "";
+            let computerText = "";
+
+            for (let card of playerHand) {
+
+                playerText += card.value;
+
+                if (card.suit) {
+                    playerText += " of " + card.suit;
+                }
+
+                playerText += " | ";
+
+            }
+
+            for (let card of computerHand) {
+
+                computerText += card.value;
+
+                if (card.suit) {
+                    computerText += " of " + card.suit;
+                }
+
+                computerText += " | ";
+
+            }
+
+            document.getElementById("playerCards").innerText =
+                "Cards: " + playerText;
+
+            document.getElementById("computerCards").innerText =
+                "Cards: " + computerText;
+
+            document.getElementById("playerScore").innerText =
+                "Score: " + getScore(playerHand);
+
+            document.getElementById("computerScore").innerText =
+                "Score: " + getScore(computerHand);
+
+        }
+
+
+        // Player chooses to hit
+        function hit() {
+
+            if (gameOver) return;
+
+            drawCard(playerHand);
+
+            updateScreen();
+
+            if (getScore(playerHand) > 21) {
+
+                document.getElementById("message").innerText =
+                    "You busted! Your score is over 21.";
+
+                endGame();
+
+            }
+
+            else if (getScore(playerHand) === 21) {
+
+                stand();
+
+            }
+
+        }
+
+
+        // Player chooses to stand
+        function stand() {
+
+            if (gameOver) return;
+
+            playerTurn = false;
+
+            document.getElementById("hitButton").disabled = true;
+            document.getElementById("standButton").disabled = true;
+
+            document.getElementById("message").innerText =
+                "The computer is playing...";
+
+            computerTurn();
+
+        }
+
+
+        // Computer takes its turn
+        function computerTurn() {
+
+            // Computer hits until it reaches at least 17
+            while (getScore(computerHand) < 17 &&
+                   getScore(computerHand) <= 21) {
+
+                drawCard(computerHand);
+
+            }
+
+            updateScreen();
+
+            endGame();
+
+        }
+
+
+        // Decide who wins
+        function endGame() {
+
+            gameOver = true;
+
+            document.getElementById("hitButton").disabled = true;
+            document.getElementById("standButton").disabled = true;
+
+            let playerScore = getScore(playerHand);
+            let computerScore = getScore(computerHand);
+
+            let result = "";
+
+            if (playerScore > 21) {
+
+                result = "THE COMPUTER WINS!";
+
+            }
+
+            else if (computerScore > 21) {
+
+                result = "YOU WIN!";
+
+            }
+
+            else if (playerScore > computerScore) {
+
+                result = "YOU WIN!";
+
+            }
+
+            else if (computerScore > playerScore) {
+
+                result = "THE COMPUTER WINS!";
+
+            }
+
+            else {
+
+                result = "IT'S A TIE!";
+
+            }
+
+            document.getElementById("game").style.display = "none";
+            document.getElementById("results").style.display = "block";
+
+            document.getElementById("winner").innerText = result;
+
+            document.getElementById("finalScores").innerText =
+                "Your score: " + playerScore +
+                " | Computer score: " + computerScore;
+
+        }
+
+    </script>
+
 </body>
+
 </html>
